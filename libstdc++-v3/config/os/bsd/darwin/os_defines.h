@@ -57,4 +57,8 @@
 // read(2) can return EINVAL for n >= INT_MAX.
 #define _GLIBCXX_MAX_READ_SIZE (__INT_MAX__ - 1)
 
+// Use the V2 ABI for once_call, the pthreads version does not work for
+// OS versions less than 10.11 (darwin15).
+#define _GLIBCXX_ONCE_CALL_ABI2 1
+
 #endif

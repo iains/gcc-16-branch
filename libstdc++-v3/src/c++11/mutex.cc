@@ -30,6 +30,66 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#ifdef _GLIBCXX_ONCE_CALL_ABI2
+inline namespace __c1v2 __attribute__((__abi_tag__ ("__c1v2"))) {
+// Version 2 ABI without global state, is callable recursively.
+// This calls the trampoline lambda, passing the address of the closure
+// repesenting the original function and its arguments.
+void
+once_flag::__do_call_once(void (*func)(void*), void *arg)
+{
+  __gthread_mutex_lock(&_M_mutx);
+  while (_M_state == 1)
+    __gthread_cond_wait(&_M_condv, &_M_mutx);
+
+  // mutex locked, the most likely outcome is that the once-call completed
+  // on some other thread, so we are done.
+  if (_M_state == 2)
+    {
+      __gthread_mutex_unlock(&_M_mutx);
+      return;
+    }
+
+  // mutex locked; if we get here, we expect the state to be 0, this would
+  // correspond to an exception throw by the previous thread that tried to
+  // do the once_call.
+  __glibcxx_assert(_M_state == 0);
+
+  try
+    {
+      // mutex locked.
+      _M_state = 1;
+      __gthread_mutex_unlock(&_M_mutx);
+      func(arg);
+      // We got here without an exception, so the call is done.
+      // If the underlying implementation is pthreads, then it is possible
+      // to trigger a sequence of events where wake-ups are lost - unless the
+      // mutex associated with the condition var is locked around the relevant
+      // broadcast (or signal).
+      __gthread_mutex_lock(&_M_mutx);
+      _M_state = 2;
+      __gthread_cond_signal(&_M_condv);
+      __gthread_mutex_unlock(&_M_mutx);
+    }
+  catch (...)
+    {
+      // mutex unlocked.
+      // func raised an exception, let someone else try ...
+      // See above.
+      __gthread_mutex_lock(&_M_mutx);
+      _M_state = 0;
+      __gthread_cond_signal(&_M_condv);
+      __gthread_mutex_unlock(&_M_mutx);
+      // ... and pass the exception to our caller.
+      throw;
+    }
+}
+} // namespace __c1v2
+#endif // _GLIBCXX_ONCE_CALL_ABI2
+
+// Unless we have a versioned library, provide the symbols for the previous
+// once call impl.
+
 #ifdef _GLIBCXX_HAVE_TLS
   __thread void* __once_callable;
   __thread void (*__once_call)();
@@ -115,7 +175,6 @@ namespace
     callable();
   }
 #endif // ! TLS
-
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

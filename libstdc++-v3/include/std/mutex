@@ -791,6 +791,58 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // __cpp_lib_scoped_lock
 
 #ifdef _GLIBCXX_HAS_GTHREADS
+#ifdef _GLIBCXX_ONCE_CALL_ABI2
+  // The revised ABI does not use TLS
+  /// Flag type used by std::call_once
+  inline namespace __c1v2 __attribute__((__abi_tag__ ("__c1v2"))) {
+  struct once_flag
+  {
+    /// Constructor
+    constexpr once_flag() = default;
+
+    /// Deleted copy constructor
+    once_flag(const once_flag&) = delete;
+    /// Deleted assignment operator
+    once_flag& operator=(const once_flag&) = delete;
+
+  private:
+    // call state: 0 = init, 1 = someone is trying, 2 = done.
+    unsigned int _M_state = 0;
+    __gthread_mutex_t _M_mutx = __GTHREAD_MUTEX_INIT;
+    __gthread_cond_t _M_condv = __GTHREAD_COND_INIT;
+
+    void __do_call_once(void (*)(void*), void*);
+
+    template<typename _Callable, typename... _Args>
+      friend void
+      call_once(once_flag& __once, _Callable&& __f, _Args&&... __args);
+  };
+
+  /// Invoke a callable and synchronize with other calls using the same flag
+  template<typename _Callable, typename... _Args>
+  void
+  call_once (once_flag& __flag, _Callable&& __f, _Args&&... __args)
+  {
+    __gthread_mutex_lock(&__flag._M_mutx);
+    bool done = (__flag._M_state == 2);
+    __gthread_mutex_unlock(&__flag._M_mutx);
+    if (done)
+      return;
+
+    // Closure type that runs the original function with the supplied args.
+    auto __callable = [&] {
+	  std::__invoke(std::forward<_Callable>(__f),
+			std::forward<_Args>(__args)...);
+    };
+    // Trampoline to call the actual fn; we will pass in the closure address.
+    void (*__oc_tramp)(void*)
+      = [] (void *ca) { (*static_cast<decltype(__callable)*>(ca))(); };
+    // Attempt to do it and synchronize with any other threads that are also
+    // trying.
+    __flag.__do_call_once(__oc_tramp, std::__addressof(__callable));
+}
+} // namespace __c1v2
+#else // ! _GLIBCXX_ONCE_CALL_ABI2
   /// Flag type used by std::call_once
   struct once_flag
   {
@@ -923,7 +975,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (int __e = __gthread_once(&__once._M_once, &__once_proxy))
 	__throw_system_error(__e);
     }
-
+#endif // _GLIBCXX_ONCE_CALL_ABI2
 #else // _GLIBCXX_HAS_GTHREADS
 
   /// Flag type used by std::call_once

@@ -2623,6 +2623,14 @@ GLIBCXX_3.4.35 {
 
 } GLIBCXX_3.4.34;
 
+# GCC 17.1.0 - but backported
+GLIBCXX_3.4.36 {
+
+    # Re-implementation of call_once
+    _ZNSt6__c1v29once_flag14__do_call_onceEPFvPvES1_;
+
+} GLIBCXX_3.4.35;
+
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
 
