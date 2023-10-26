@@ -1,6 +1,7 @@
 /* { dg-do assemble } */
 /* { dg-require-effective-target aarch64_mbig_endian } */
 /* { dg-options "-O2 -mbig-endian --save-temps" } */
+/* { dg-skip-if "no BE" { *-*-darwin* } } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 typedef unsigned char v16qi __attribute__((vector_size(16)));
