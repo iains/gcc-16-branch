@@ -28,18 +28,28 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
      && !defined(__STDDEF_H__)) \
     || defined(__need_wchar_t) || defined(__need_size_t) \
     || defined(__need_ptrdiff_t) || defined(__need_NULL) \
-    || defined(__need_wint_t)
+    || defined(__need_wint_t) || defined(__need_rsize_t)
 
 /* Any one of these symbols __need_* means that GNU libc
    wants us just to define one data type.  So don't define
    the symbols that indicate this file's entire job has been done.  */
 #if (!defined(__need_wchar_t) && !defined(__need_size_t)	\
      && !defined(__need_ptrdiff_t) && !defined(__need_NULL)	\
-     && !defined(__need_wint_t))
+     && !defined(__need_wint_t) && !defined(__need_rsize_t))
 #define _STDDEF_H
 #define _STDDEF_H_
 /* snaroff@next.com says the NeXT needs this.  */
 #define _ANSI_STDDEF_H
+#endif
+
+/* Apple SDK headers request rsize_t via __need_rsize_t (clang extension,
+   C11 Annex K: rsize_t is size_t).  */
+#ifdef __need_rsize_t
+#ifndef _GCC_RSIZE_T
+#define _GCC_RSIZE_T
+typedef __SIZE_TYPE__ rsize_t;
+#endif
+#undef __need_rsize_t
 #endif
 
 #ifndef __sys_stdtypes_h
