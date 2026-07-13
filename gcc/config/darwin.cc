@@ -2008,7 +2008,7 @@ darwin_globalize_label (FILE *stream, const char *name)
     return;
   if (startswith (name+6, "LabelPro"))
     default_globalize_label (stream, name);
-  if (startswith (name+6, "Protocol_"))
+  if (startswith (name+6, "Protocol"))
     default_globalize_label (stream, name);
 }
 
@@ -2065,7 +2065,7 @@ darwin_label_is_anonymous_local_objc_name (const char *name)
     return false;
   else if (startswith ((const char *)p, "Protocol"))
     {
-      if (p[8] == '_' || p[8] == 'I' || p[8] == 'P'
+      if (p[8] == '_' || p[8] == 'I' || p[8] == 'P' || p[8] == 'R'
 	  || p[8] == 'M' || p[8] == 'C' || p[8] == 'O')
 	return false;
       return true;
