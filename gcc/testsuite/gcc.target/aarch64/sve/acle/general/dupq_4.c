@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target aarch64_mbig_endian } */
 /* { dg-options "-O2 -mbig-endian" } */
 
 /* To avoid needing big-endian header files.  */

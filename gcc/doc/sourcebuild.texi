@@ -2403,6 +2403,8 @@ AArch64 target which generates instruction sequences for large memory model.
 AArch64 target which generates instruction sequences for little endian.
 @item aarch64_big_endian
 AArch64 target which generates instruction sequences for big endian.
+@item aarch64_mbig_endian
+AArch64 target supporting big endian code generation with @code{-mbig-endian}.
 @item aarch64_small_fpic
 Binutils installed on test system supports relocation types required by -fpic
 for AArch64 small memory model.

@@ -1,3 +1,4 @@
+/* { dg-require-effective-target aarch64_mbig_endian } */
 /* { dg-options "-O2 -mbig-endian" } */
 
 #pragma GCC aarch64 "arm_sve.h"

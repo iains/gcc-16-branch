@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target aarch64_mbig_endian } */
 /* { dg-options "-mbig-endian" } */
 
 typedef int __attribute__((vector_size(16))) v4si;

@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target aarch64_mbig_endian } */
 /* { dg-options "-O -mbig-endian -fno-shrink-wrap -fno-stack-clash-protection -g" } */
 /* { dg-final { check-function-bodies "**" "" "" { target lp64 } } } */
 
